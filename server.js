@@ -3,14 +3,21 @@ const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 const formatMessage = require("./utils/messages");
+const { userJoin, getCurrentUser } = require("./utils/users");
 
 const port = 3000;
 io.on("connection", (socket) => {
-  socket.emit("message", formatMessage("Admin", "wellcom!!"));
-  socket.broadcast.emit("message", formatMessage("Admin", "user joined"));
+  socket.on("joinRoom", ({ username, room }) => {
+    const user = userJoin(socket.id, username, room);
+    socket.join(user.room);
+    socket.emit("message", formatMessage("Admin", "wellcom!!"));
+    socket.broadcast
+      .to(user.room)
+      .emit("message", formatMessage("Admin", user.username + " joined"));
+  });
 
   socket.on("chatMessage", (msg) => {
-    socket.emit("message", formatMessage("user", msg));
+    socket.emit("message", formatMessage(username, msg));
   });
 
   socket.on("disconnect", () => {
