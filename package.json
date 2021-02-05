@@ -15,5 +15,13 @@
   "bugs": {
     "url": "https://github.com/ahmad1091/chat-rooms/issues"
   },
-  "homepage": "https://github.com/ahmad1091/chat-rooms#readme"
+  "homepage": "https://github.com/ahmad1091/chat-rooms#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "moment": "^2.29.1",
+    "socket.io": "^3.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
 }
