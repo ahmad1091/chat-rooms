@@ -3,7 +3,12 @@ const app = express();
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 const formatMessage = require("./utils/messages");
-const { userJoin, getCurrentUser } = require("./utils/users");
+const {
+  userJoin,
+  getCurrentUser,
+  userLeave,
+  getRoomUsers,
+} = require("./utils/users");
 
 const port = 3000;
 io.on("connection", (socket) => {
@@ -14,14 +19,31 @@ io.on("connection", (socket) => {
     socket.broadcast
       .to(user.room)
       .emit("message", formatMessage("Admin", user.username + " joined"));
+    io.to(user.room).emit("roomUsers", {
+      room: user.room,
+      users: getRoomUsers(room),
+    });
   });
 
   socket.on("chatMessage", (msg) => {
-    socket.emit("message", formatMessage(username, msg));
+    const user = getCurrentUser(socket.id);
+    if (user) {
+      io.to(user.room).emit("message", formatMessage(user.username, msg));
+    }
   });
 
   socket.on("disconnect", () => {
-    io.emit("message", formatMessage("Admin", "user disconnected"));
+    const user = userLeave(socket.id);
+    if (user) {
+      io.to(user.room).emit(
+        "message",
+        formatMessage("Admin", user.username + " left")
+      );
+      io.to(user.room).emit("roomUsers", {
+        room: user.room,
+        users: getRoomUsers(room),
+      });
+    }
   });
 });
 app.use(express.static("public"));
